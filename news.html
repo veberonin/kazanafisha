@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Новости — Афиша Казани</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body data-page="news">
+  <div id="toast" class="toast hidden"></div>
+
+  <header class="header header--compact">
+    <div class="container header__top">
+      <a class="brand" href="index.html">
+        <div class="brand__logo">
+          <img id="siteLogo" src="https://i.pinimg.com/736x/97/d6/1c/97d61c568771a87c4f83c79d03a9a4d8.jpg" alt="Логотип">
+        </div>
+        <div class="brand__text">
+          <div class="brand__title">Новости</div>
+          <div class="brand__sub">Афиша Казани</div>
+        </div>
+      </a>
+
+      <div class="topActions">
+        <button id="themeBtn" class="btn btn--soft">Тема: Авто</button>
+        <a class="btn btn--soft" href="index.html">← На главную</a>
+        <a id="profileLink" class="btn btn--soft hidden" href="profile.html">Профиль</a>
+        <span class="pill">Пользователь: <span id="currentUser">Гость</span></span>
+      </div>
+    </div>
+  </header>
+
+  <section id="newsHero" class="hero hidden">
+    <div class="hero__bg" id="newsHeroBg"></div>
+    <div class="container hero__in">
+      <h1 id="newsTitle" class="hero__title">Заголовок</h1>
+      <div id="newsMeta" class="hero__meta"></div>
+      <div class="muted small heroHint">Скролл вниз → фон темнее и прозрачнее.</div>
+    </div>
+  </section>
+
+  <!-- ДВУХКОЛОНОЧНЫЙ LAYOUT: слева новости, справа реклама -->
+  <main class="container layout">
+    <section>
+      <!-- Панель СМИ -->
+      <div id="newsAdminBar" class="row hidden" style="margin-bottom:12px; align-items:center;">
+        <button id="btnNewsAdd" class="btn btn--primary">Добавить новость</button>
+
+        <select id="newsSort" class="input" style="max-width:260px;">
+          <option value="date_desc">Дата: новые → старые</option>
+          <option value="date_asc">Дата: старые → новые</option>
+          <option value="hidden_first">Скрытые сверху</option>
+          <option value="visible_first">Скрытые снизу</option>
+        </select>
+
+        <label class="check" style="padding:8px 10px;">
+          <input id="newsOnlyHidden" type="checkbox">
+          <span>Показывать только скрытые</span>
+        </label>
+
+        <button id="btnNewsResetSeed" class="btn btn--soft">Сбросить к сид-новостям</button>
+      </div>
+
+      <div id="newsList" class="grid"></div>
+
+      <div id="newsDetail" class="card hidden" style="margin-top:14px;">
+        <div class="card__head">
+          <h2 class="h2">Подробно</h2>
+          <div class="muted small">Текст формируется из блоков (абзацы + картинки)</div>
+          <div id="newsDetailAdmin" class="row hidden" style="margin-top:10px;"></div>
+        </div>
+        <div id="newsContent" class="card__body"></div>
+        <div class="card__body" style="padding-top:0;">
+          <a class="btn btn--soft btn--sm" href="news.html">← Ко всем новостям</a>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <!-- РЕКЛАМА ДЛЯ NEWS (2 баннера, автосмена в app.js) -->
+      <div class="card" id="newsAdCard">
+        <div class="card__head">
+          <h2 class="h2">Реклама</h2>
+          <div class="muted small">GIF + ссылка (меняется каждые 60 секунд)</div>
+        </div>
+        <div class="card__body">
+          <a id="newsAdLink" class="ad" href="#" target="_blank" rel="noopener noreferrer">
+            <img id="newsAdGif" src="" alt="Реклама">
+          </a>
+          <div class="muted small" style="margin-top:8px;">.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- OVERLAY нужен для модалки -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <!-- MODAL: редактор новости (для СМИ/создателя) -->
+  <div id="modalNewsEdit" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="newsEdModalTitle">Новость</div>
+      <button class="btn btn--soft btn--icon" data-close="modalNewsEdit">✕</button>
+    </div>
+
+    <div class="modal__body">
+      <input type="hidden" id="newsEdId">
+
+      <div class="form grid2">
+        <label class="field" style="grid-column:1/-1">
+          <span>Заголовок</span>
+          <input id="newsEdTitle" class="input" placeholder="Заголовок новости">
+        </label>
+
+        <label class="field">
+          <span>Дата (YYYY-MM-DD)</span>
+          <input id="newsEdDate" class="input" placeholder="2026-06-10">
+        </label>
+
+        <label class="field">
+          <span>Превью-картинка (URL) — для списка</span>
+          <input id="newsEdImageUrl" class="input" placeholder="https://...jpg/png/webp">
+        </label>
+
+        <label class="field" style="grid-column:1/-1">
+          <span>Краткое описание (summary) — для виджета на главной</span>
+          <textarea id="newsEdSummary" class="input" rows="2" placeholder="Коротко о новости..."></textarea>
+        </label>
+
+        <label class="field" style="grid-column:1/-1">
+          <span>Фон новости (URL) — опционально (если пусто, будет превью)</span>
+          <input id="newsEdBgUrl" class="input" placeholder="https://...">
+        </label>
+      </div>
+
+      <hr class="hr">
+
+      <div class="row">
+        <button id="newsAddTextBlock" class="btn btn--soft btn--sm">+ Абзац текста</button>
+        <button id="newsAddImageBlock" class="btn btn--soft btn--sm">+ Картинка (URL)</button>
+      </div>
+
+      <div id="newsEdBlocks" class="newsBlocks" style="margin-top:12px;"></div>
+
+      <div class="row" style="margin-top:12px;">
+        <button id="newsSaveBtn" class="btn btn--primary">Сохранить</button>
+        <button class="btn btn--soft" data-close="modalNewsEdit">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

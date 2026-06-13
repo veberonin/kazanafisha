@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мероприятие — Афиша Казани</title>
+
+  <!-- ШРИФТ: меняй так же, как в index.html -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body data-page="event" class="eventPage">
+  <div id="toast" class="toast hidden"></div>
+
+  <header class="header header--compact">
+    <div class="container header__top">
+      <a class="brand" href="index.html">
+        <div class="brand__logo"><img id="siteLogo" src="https://i.pinimg.com/736x/97/d6/1c/97d61c568771a87c4f83c79d03a9a4d8.jpg" alt="Логотип"></div>
+        <div class="brand__text">
+          <div class="brand__title">Мероприятие</div>
+          <div class="brand__sub">Афиша Казани</div>
+        </div>
+      </a>
+
+      <div class="topActions">
+        <button id="themeBtn" class="btn btn--soft">Тема: Авто</button>
+        <a class="btn btn--soft" href="index.html">← На главную</a>
+        <a id="profileLink" class="btn btn--soft hidden" href="profile.html">Профиль</a>
+        <span class="pill">Пользователь: <span id="currentUser">Гость</span></span>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero__bg" id="heroBg"></div>
+    <div class="container hero__in">
+      <h1 id="evTitle" class="hero__title">Название события</h1>
+      <div id="evMeta" class="hero__meta"></div>
+      <div class="hero__actions">
+        <button id="evBuyBtn" class="btn btn--primary">Купить</button>
+        <button id="evChatBtn" class="btn btn--soft">Чат (после покупки)</button>
+      </div>
+      <div class="muted small heroHint">Скролл вниз → фон темнее и прозрачнее.</div>
+    </div>
+  </section>
+
+  <main class="container eventContent eventContent--long">
+    <section class="card">
+      <div class="card__head"><h2 class="h2">Описание</h2></div>
+      <div id="evDesc" class="card__body"></div>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2 class="h2">Информация</h2></div>
+      <div id="evInfo" class="card__body"></div>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2 class="h2">Правила мероприятия</h2></div>
+      <div id="evRules" class="card__body muted" style="white-space:pre-wrap"></div>
+    </section>
+
+    <!-- ВИДЕО (необязательно) -->
+    <section class="card" id="videoCard" hidden>
+      <div class="card__head">
+        <h2 class="h2">Видео</h2>
+        <div class="muted small">Если организатор добавил ссылку</div>
+      </div>
+      <div class="card__body">
+        <div id="videoBox"></div>
+      </div>
+    </section>
+
+    <!-- почти незаметная подпись внизу -->
+    <div class="fineprint">
+      казань афиша • метро: кремлёвская, проспект победы, суконная слобода, аметьево, площадь тукая, козья слобода, яшьлек
+    </div>
+  </main>
+
+  <div id="overlay" class="overlay hidden"></div>
+
+  <div id="modalBuy" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Покупка билета</div>
+      <button class="btn btn--soft btn--icon" data-close="modalBuy">✕</button>
+    </div>
+    <div class="modal__body" id="buyBody"></div>
+  </div>
+
+  <div id="modalChat" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="chatTitle">Чат</div>
+      <button class="btn btn--soft btn--icon" data-close="modalChat">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="chatBox" class="chat"></div>
+      <div class="row">
+        <input id="chatInput" class="input" placeholder="Сообщение..."/>
+        <button id="chatSend" class="btn btn--primary">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

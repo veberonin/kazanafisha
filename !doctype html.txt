@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Афиша Казани</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet (карта) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- PRELOADER -->
+  <div id="preloader" class="preloader" aria-label="Загрузка">
+    <div class="preloader__box">
+      <div class="spinner"></div>
+      <div class="preloader__title">Загрузка афиши Казани…</div>
+      <div class="preloader__sub">События • Карта • Билеты</div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <header class="header">
+    <div class="container header__row">
+      <a class="brand" href="index.html">
+        <!-- ЛОГОТИП: вставь src -->
+        <div class="brand__logo">
+          <img id="siteLogo" src="" alt="Логотип (вставь изображение)" />
+        </div>
+        <div class="brand__text">
+          <div class="brand__title">Афиша Казани</div>
+          <div class="brand__sub">Светлая/тёмная тема • Кремль-стиль</div>
+        </div>
+      </a>
+
+      <div class="search">
+        <input id="searchInput" class="input" placeholder="Поиск мероприятия..." />
+        <button id="searchBtn" class="btn btn--primary">Найти</button>
+      </div>
+
+      <div class="header__actions">
+        <button id="themeBtn" class="btn btn--soft" title="Смена темы">Тема: Авто</button>
+
+        <div id="authBtns" class="auth">
+          <button id="btnRegister" class="btn btn--soft">Зарегистрироваться</button>
+          <button id="btnLogin" class="btn btn--primary">Войти</button>
+        </div>
+
+        <div class="user">
+          <div class="user__chip">
+            <span class="muted">Пользователь:</span> <b id="currentUser">Гость</b>
+          </div>
+          <button id="btnLogout" class="btn btn--soft hidden">Выйти</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container header__row header__row--nav">
+      <nav class="nav">
+        <button id="btnFilter" class="btn btn--soft">Фильтр</button>
+        <button id="btnCategories" class="btn btn--soft">Категории</button>
+        <button id="btnMap" class="btn btn--soft">Карта</button>
+        <button id="btnFortune" class="btn btn--soft">Колесо фортуны</button>
+        <button id="btnSupport" class="btn btn--soft">Поддержка</button>
+      </nav>
+
+      <div class="wallet">
+        <div class="wallet__chip">
+          Баланс: <b><span id="balance">0</span> ₭</b>
+        </div>
+        <button id="btnTopup" class="btn btn--primary btn--sm">Купить валюту</button>
+        <button id="btnGift" class="btn btn--soft btn--sm">Подарить</button>
+
+        <div class="notif">
+          <button id="btnNotif" class="btn btn--soft btn--sm">
+            Уведомления <span id="notifCount" class="badge">0</span>
+          </button>
+          <div id="notifDrop" class="drop hidden"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <section>
+      <div class="sectionHead">
+        <div>
+          <h1 class="h1">Мероприятия</h1>
+          <div class="muted">Карточки кликабельны. Названия/описания/фоны событий — добавишь в <code>app.js</code>.</div>
+        </div>
+      </div>
+
+      <div id="activeChips" class="chips"></div>
+
+      <!-- Категории как “вкладки” -->
+      <div id="catTabs" class="tabs"></div>
+
+      <div id="eventsGrid" class="grid"></div>
+    </section>
+
+    <aside class="side">
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Новостная стена</h2>
+          <div class="muted">Актуальные новости событий города</div>
+        </div>
+        <div id="newsWall" class="list"></div>
+      </div>
+
+      <!-- УСЛОВИЯ С КАРТИНКИ (график) -->
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">График работ (практика)</h2>
+          <div class="muted">По таблице с заданиями</div>
+        </div>
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>№</th>
+                <th>Индивидуальные задания</th>
+                <th>Сроки</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Изучение основ веб‑технологий. Изучение HTML.</td>
+                <td>с 09.02 по 16.02</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Изучение CSS.</td>
+                <td>с 17.02 по 24.02</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Изучение Javascript.</td>
+                <td>с 25.02 по 11.03</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Создание сайта‑афиши. Страницы мероприятий по категориям. Предзагрузка.</td>
+                <td>с 12.03 по 15.04</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Информационные страницы. Слайдер. Страницы посвящённых мероприятий.</td>
+                <td>с 16.04 по 28.05</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Выступление с презентацией проекта.</td>
+                <td>с 29.05 по 05.06</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Оформление отчёта по практике.</td>
+                <td>с 06.06 по 06.06</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Мои билеты</h2>
+          <div class="muted">Появятся после покупки</div>
+        </div>
+        <div id="myTickets" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Купоны</h2>
+          <div class="muted">С колеса фортуны</div>
+        </div>
+        <div id="myCoupons" class="list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__row">
+      <div class="muted">© Афиша Казани (прототип)</div>
+      <div class="muted">Метро: Кремлёвская • Проспект Победы • Суконная слобода • Аметьево • Площадь Тукая • Козья слобода • Яшьлек</div>
+    </div>
+  </footer>
+
+  <!-- OVERLAY + MODALS -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <!-- AUTH -->
+  <div id="modalAuth" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="authTitle">Вход</div>
+      <button class="btn btn--soft btn--icon" data-close="modalAuth">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form">
+        <label class="field">
+          <span>Никнейм</span>
+          <input id="authUser" class="input" placeholder="например: VOTERLORE" />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input id="authEmail" class="input" type="email" placeholder="you@mail.com" />
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input id="authPass" class="input" type="password" placeholder="••••••••" />
+        </label>
+
+        <div class="row">
+          <button id="authSubmit" class="btn btn--primary">Продолжить</button>
+          <button id="authSwitch" class="btn btn--soft">Переключить режим</button>
+        </div>
+
+        <div class="muted small">
+          Демо-авторизация (localStorage).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div id="modalFilter" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Фильтры</div>
+      <button class="btn btn--soft btn--icon" data-close="modalFilter">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form grid2">
+        <label class="field">
+          <span>Цена от (₭)</span>
+          <input id="fMin" class="input" type="number" min="0" placeholder="0" />
+        </label>
+        <label class="field">
+          <span>Цена до (₭)</span>
+          <input id="fMax" class="input" type="number" min="0" placeholder="5000" />
+        </label>
+
+        <label class="field">
+          <span>Возраст</span>
+          <select id="fAge" class="input">
+            <option value="">Любой</option>
+            <option value="0">0+</option>
+            <option value="6">6+</option>
+            <option value="12">12+</option>
+            <option value="16">16+</option>
+            <option value="18">18+</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Метро (можно несколько)</span>
+          <select id="fMetro" class="input" multiple size="7"></select>
+          <div class="muted small">Ctrl/Shift — множественный выбор</div>
+        </label>
+
+        <label class="field">
+          <span>Категории (можно несколько)</span>
+          <select id="fCats" class="input" multiple size="8"></select>
+        </label>
+      </div>
+
+      <div class="row">
+        <button id="applyFilter" class="btn btn--primary">Применить</button>
+        <button id="resetFilter" class="btn btn--soft">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div id="modalCats" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Категории</div>
+      <button class="btn btn--soft btn--icon" data-close="modalCats">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="catsBox" class="cats"></div>
+      <div class="muted small">Нажми на категорию — отфильтруем.</div>
+    </div>
+  </div>
+
+  <!-- BUY -->
+  <div id="modalBuy" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Покупка билета</div>
+      <button class="btn btn--soft btn--icon" data-close="modalBuy">✕</button>
+    </div>
+    <div class="modal__body" id="buyBody"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="modalChat" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="chatTitle">Чат</div>
+      <button class="btn btn--soft btn--icon" data-close="modalChat">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="chatBox" class="chat"></div>
+      <div class="row">
+        <input id="chatInput" class="input" placeholder="Сообщение..." />
+        <button id="chatSend" class="btn btn--primary">Отправить</button>
+      </div>
+      <div class="muted small">Чат в прототипе локальный (на этом устройстве).</div>
+    </div>
+  </div>
+
+  <!-- TOPUP -->
+  <div id="modalTopup" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Покупка валюты</div>
+      <button class="btn btn--soft btn--icon" data-close="modalTopup">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="muted">1 ₭ = 1 рубль (симуляция).</div>
+      <div class="form" style="margin-top:10px;">
+        <label class="field">
+          <span>Сумма (₭)</span>
+          <input id="topupAmount" class="input" type="number" min="1" value="500" />
+        </label>
+        <button id="topupConfirm" class="btn btn--primary">Пополнить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIFT -->
+  <div id="modalGift" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Подарить валюту</div>
+      <button class="btn btn--soft btn--icon" data-close="modalGift">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form">
+        <label class="field">
+          <span>Кому (никнейм)</span>
+          <input id="giftTo" class="input" placeholder="например: vasiliy" />
+        </label>
+        <label class="field">
+          <span>Сколько (₭)</span>
+          <input id="giftAmount" class="input" type="number" min="1" value="100" />
+        </label>
+        <button id="giftConfirm" class="btn btn--primary">Подарить</button>
+        <div class="muted small">В демо получатель должен быть зарегистрирован в этом браузере.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORTUNE -->
+  <div id="modalFortune" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Колесо фортуны (1 раз в день)</div>
+      <button class="btn btn--soft btn--icon" data-close="modalFortune">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="fortune">
+        <div class="wheelWrap">
+          <div id="wheel" class="wheel" aria-label="Колесо"></div>
+          <div class="pointer">▲</div>
+        </div>
+        <div>
+          <div class="muted">15 исходов: скидки или бесплатный билет.</div>
+          <button id="spin" class="btn btn--primary" style="margin-top:10px;">Крутить</button>
+          <div id="spinInfo" class="note" style="margin-top:10px;"></div>
+          <div class="muted small">Купон применяется к следующей покупке автоматически.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="modalSupport" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Поддержка</div>
+      <button class="btn btn--soft btn--icon" data-close="modalSupport">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="support">
+        <div>
+          <div class="muted">Автобот (частые вопросы):</div>
+          <div id="botChat" class="chat" style="margin-top:10px;"></div>
+          <div class="row" style="margin-top:10px;">
+            <input id="botInput" class="input" placeholder="как купить? валюта? колесо? чат?" />
+            <button id="botSend" class="btn btn--primary">Отправить</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="muted">Сообщение владельцу (EmailJS → на noterlore@gmail.com):</div>
+          <div class="form" style="margin-top:10px;">
+            <label class="field">
+              <span>Тема</span>
+              <input id="supSubject" class="input" placeholder="Тема" />
+            </label>
+            <label class="field">
+              <span>Сообщение</span>
+              <textarea id="supMessage" class="input" rows="6" placeholder="Опиши вопрос..."></textarea>
+            </label>
+            <div class="row">
+              <button id="supSend" class="btn btn--primary">Отправить</button>
+              <a id="supMailto" class="btn btn--soft" href="#">mailto (запасной)</a>
+            </div>
+            <div class="muted small">
+              EmailJS должен быть настроен (ключи в app.js).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="modalMap" class="modal modal--wide hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Карта Казани</div>
+      <button class="btn btn--soft btn--icon" data-close="modalMap">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="map" class="map"></div>
+      <div class="muted small" style="margin-top:10px;">Маркеры показывают плашки мероприятий.</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

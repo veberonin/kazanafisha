@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиль — Афиша Казани</title>
+
+  <!-- ШРИФТ: менять так же, как в index.html -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body data-page="profile">
+  <div id="toast" class="toast hidden"></div>
+
+  <header class="header header--compact">
+    <div class="container header__top">
+      <a class="brand" href="index.html">
+        <div class="brand__logo"><img id="siteLogo" src="https://i.pinimg.com/736x/97/d6/1c/97d61c568771a87c4f83c79d03a9a4d8.jpg" alt="Логотип"></div>
+        <div class="brand__text">
+          <div class="brand__title">Профиль</div>
+          <div class="brand__sub">Афиша Казани</div>
+        </div>
+      </a>
+
+      <div class="topActions">
+        <button id="themeBtn" class="btn btn--soft">Тема: Авто</button>
+        <a class="btn btn--soft" href="index.html">← На главную</a>
+        <span class="pill">Пользователь: <span id="currentUser">Гость</span></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:16px 0 24px;">
+    <div class="card">
+      <div class="card__head">
+        <h2 class="h2">Мой аккаунт</h2>
+        <div class="muted small">Фото • о себе • VIP • смена логина</div>
+      </div>
+      <div class="card__body">
+        <div id="profileHeader" class="item"></div>
+
+        <div class="form grid2" style="margin-top:12px;">
+          <label class="field">
+            <span>Отображаемое имя</span>
+            <input id="pDisplayName" class="input" placeholder="Например: Василий">
+          </label>
+
+          <label class="field">
+            <span>Фото (URL)</span>
+            <!-- ВСТАВЬ СЮДА ССЫЛКУ НА СВОЁ ФОТО -->
+            <input id="pPhotoUrl" class="input" placeholder="https://...jpg/png">
+          </label>
+
+          <label class="field" style="grid-column:1/-1;">
+            <span>О себе</span>
+            <textarea id="pAbout" class="input" rows="5" placeholder="Напиши о себе..."></textarea>
+          </label>
+
+          <label class="field">
+            <span>Сменить логин (ник для входа)</span>
+            <input id="pNewUsername" class="input" placeholder="Новый логин">
+            <div class="muted small">Переносим баланс, уведомления, покупки, сообщения.</div>
+          </label>
+
+          <div class="field">
+            <span>&nbsp;</span>
+            <button id="pRenameBtn" class="btn btn--soft">Сменить логин</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <button id="pSaveBtn" class="btn btn--primary">Сохранить профиль</button>
+          <button id="buyVipBtn" class="btn btn--soft">Купить VIP (синий ник)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="card__head">
+        <h2 class="h2">Сообщения</h2>
+        <div class="muted small">Вопросы/ответы организаторам и создателю</div>
+      </div>
+      <div class="card__body">
+        <div id="inboxList" class="list" style="max-height:420px;"></div>
+
+        <div class="form" style="margin-top:12px;">
+          <label class="field">
+            <span>Ответить на выбранное сообщение</span>
+            <textarea id="replyText" class="input" rows="3" placeholder="Твой ответ..."></textarea>
+          </label>
+          <div class="row">
+            <button id="replyBtn" class="btn btn--primary">Отправить ответ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Организатор: список своих событий -->
+    <div id="orgEventsCard" class="card hidden" style="margin-top:14px;">
+      <div class="card__head">
+        <h2 class="h2">Мои события (организатор)</h2>
+        <div class="muted small">Можно редактировать/удалять только свои</div>
+      </div>
+      <div class="card__body" id="orgEventsInline"></div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

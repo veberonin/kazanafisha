@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Афиша Казани</title>
+
+  <!--
+    ============================
+    ШРИФТ (подключение):
+    - Хочешь другой шрифт: замени ссылку ниже на нужный Google Fonts
+    - И/или поменяй CSS переменную --font-family в styles.css
+    ============================
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet (карта) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body data-page="index">
+  <!-- ФОН ГЛАВНОЙ СТРАНИЦЫ (картинку вставишь в styles.css, см. комментарий там) -->
+  <div id="pageBg" class="pageBg" aria-hidden="true"></div>
+
+  <!-- PRELOADER -->
+  <div id="preloader" class="preloader" aria-label="Загрузка">
+    <div class="preloader__card">
+      <div class="spinner"></div>
+      <div class="preloader__title">Казань Афиша</div>
+      <div class="preloader__sub">Загружаем события…</div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <header class="header">
+    <div class="container header__top">
+      <a class="brand" href="index.html">
+        <!-- ЛОГОТИП: вставь src -->
+        <div class="brand__logo">
+          <img id="siteLogo" src="https://i.pinimg.com/1200x/56/df/ac/56dfac358b5d9d575bc8f8f3edf8885e.jpg" alt="Логотип">
+        </div>
+        <div class="brand__text">
+          <div class="brand__title">Афиша Казани</div>
+          <div class="brand__sub">События • билеты • карта</div>
+        </div>
+      </a>
+
+      <div class="search">
+        <input id="searchInput" class="input" placeholder="Поиск мероприятий...">
+        <button id="searchBtn" class="btn btn--primary">Найти</button>
+      </div>
+
+      <div class="topActions">
+        <button id="themeBtn" class="btn btn--soft">Тема: Авто</button>
+
+        <div id="authBtns" class="auth">
+          <button id="btnRegister" class="btn btn--soft">Зарегистрироваться</button>
+          <button id="btnLogin" class="btn btn--primary">Войти</button>
+        </div>
+
+        <div class="userBox">
+          <span class="pill">Пользователь: <span id="currentUser">Гость</span></span>
+          <a id="profileLink" class="btn btn--soft hidden" href="profile.html">Профиль</a>
+          <button id="btnLogout" class="btn btn--soft hidden">Выйти</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container header__bottom">
+      <nav class="nav">
+        <button id="btnFilter" class="btn btn--soft">Фильтр</button>
+        <button id="btnCategories" class="btn btn--soft">Категории</button>
+        <a class="btn btn--soft" href="news.html">Новости</a>
+        <button id="btnMap" class="btn btn--soft">Карта</button>
+        <button id="btnWheel" class="btn btn--soft">Колесо</button>
+        <button id="btnSupport" class="btn btn--soft">Поддержка</button>
+
+        <!-- Организатор/Создатель -->
+        <button id="btnOrgPanel" class="btn btn--primary hidden">Добавить событие</button>
+        <button id="btnOrgEvents" class="btn btn--soft hidden">Управление событиями</button>
+      </nav>
+
+      <div class="wallet">
+        <span class="pill pill--gold">Баланс: <b><span id="balance">0</span> ₭</b></span>
+
+        <button id="btnTopup" class="btn btn--primary btn--sm">Купить валюту</button>
+        <button id="btnGift" class="btn btn--soft btn--sm">Подарить</button>
+
+        <div class="notif">
+          <button id="btnNotif" class="btn btn--soft btn--sm">
+            Уведомления <span id="notifCount" class="badge">0</span>
+          </button>
+          <div id="notifDrop" class="drop hidden"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <section>
+      <div class="sectionHead">
+        <div>
+          <h1 class="h1">Мероприятия</h1>
+          <div class="muted small"></div>
+        </div>
+      </div>
+
+      <div id="activeChips" class="chips"></div>
+      <div id="catTabs" class="tabs"></div>
+      <div id="eventsGrid" class="grid"></div>
+    </section>
+
+    <aside class="side">
+      <!-- РЕКЛАМА -->
+      <div class="card" id="adCard">
+        <div class="card__head">
+          <h2 class="h2">Реклама</h2>
+          <div class="muted small">GIF + ссылка</div>
+        </div>
+        <div class="card__body">
+          <!--
+            ВСТАВЬ СЮДА:
+              1) href = ссылка на рекламируемый сайт
+              2) src  = путь/URL GIF
+            Если src пустой — блок скрывается автоматически.
+          -->
+          <a id="adLink" class="ad" href="https://xxl.tours/?utm_source=social&utm_medium=cpm&utm_campaign=xxltourstgkanal&utm_content=xxltourstgkanal" target="_blank" rel="noopener noreferrer">
+            <img id="adGif" src="" alt="Реклама (вставь GIF)">
+          </a>
+          <div class="muted small" style="margin-top:8px;">.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Новости (быстро)</h2>
+          <div class="muted small"></div>
+        </div>
+        <div id="newsWidget" class="list"></div>
+        <div class="card__body" style="padding-top:0;">
+          <a class="btn btn--soft btn--sm" href="news.html">Все новости</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Мои билеты</h2>
+          <div class="muted small">После покупки (есть возврат)</div>
+        </div>
+        <div id="myTickets" class="list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2 class="h2">Купоны</h2>
+          <div class="muted small">С колеса фортуны (15)</div>
+        </div>
+        <div id="myCoupons" class="list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__row">
+      <div class="muted">© Афиша Казани (прототип)</div>
+      <div class="muted">Метро: Кремлёвская • Проспект Победы • Суконная слобода • Аметьево • Площадь Тукая • Козья слобода • Яшьлек</div>
+    </div>
+  </footer>
+
+  <!-- OVERLAY -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <!-- AUTH MODAL -->
+  <div id="modalAuth" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="authTitle">Вход</div>
+      <button class="btn btn--soft btn--icon" data-close="modalAuth">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form">
+        <label class="field">
+          <span>Никнейм</span>
+          <input id="authUser" class="input" placeholder="например: vasiliy">
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input id="authEmail" class="input" type="email" placeholder="you@mail.com">
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input id="authPass" class="input" type="password" placeholder="Пароль">
+        </label>
+
+        <label class="check" id="orgCheckRow">
+          <input id="authIsOrg" type="checkbox">
+          <span>Регистрируюсь как организатор</span>
+        </label>
+<label class="check" id="mediaCheckRow">
+  <input id="authIsMedia" type="checkbox">
+  <span>Регистрируюсь как СМИ (смогу добавлять/удалять новости)</span>
+</label>
+
+        <div class="row">
+          <button id="authSubmit" class="btn btn--primary">Продолжить</button>
+          <button id="authSwitch" class="btn btn--soft">Переключить режим</button>
+        </div>
+
+        <div class="muted small">
+          Пароль должен содержать: 8+ символов, заглавные/строчные, цифру, спецсимвол.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER MODAL -->
+  <div id="modalFilter" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Фильтры</div>
+      <button class="btn btn--soft btn--icon" data-close="modalFilter">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form grid2">
+        <label class="field">
+          <span>Цена от (₭)</span>
+          <input id="fMin" class="input" type="number" min="0" placeholder="0">
+        </label>
+        <label class="field">
+          <span>Цена до (₭)</span>
+          <input id="fMax" class="input" type="number" min="0" placeholder="5000">
+        </label>
+
+        <label class="field">
+          <span>Возраст</span>
+          <select id="fAge" class="input">
+            <option value="">Любой</option>
+            <option value="0">0+</option>
+            <option value="6">6+</option>
+            <option value="12">12+</option>
+            <option value="16">16+</option>
+            <option value="18">18+</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Метро (можно несколько)</span>
+          <select id="fMetro" class="input" multiple size="7"></select>
+        </label>
+
+        <label class="field">
+          <span>Категории (можно несколько)</span>
+          <select id="fCats" class="input" multiple size="8"></select>
+        </label>
+      </div>
+
+      <div class="row">
+        <button id="applyFilter" class="btn btn--primary">Применить</button>
+        <button id="resetFilter" class="btn btn--soft">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES MODAL -->
+  <div id="modalCats" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Категории</div>
+      <button class="btn btn--soft btn--icon" data-close="modalCats">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="catsBox" class="cats"></div>
+    </div>
+  </div>
+
+  <!-- ORGANIZER CREATE/EDIT MODAL -->
+  <div id="modalOrg" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="orgModalTitle">Добавить событие</div>
+      <button class="btn btn--soft btn--icon" data-close="modalOrg">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="muted small">
+        Картинку можно указать URL или загрузить файлом (файл сохранится в браузере base64).
+      </div>
+
+      <div class="form grid2" style="margin-top:12px">
+        <label class="field">
+          <span>Название</span>
+          <input id="orgTitle" class="input" placeholder="Название мероприятия">
+        </label>
+
+        <label class="field">
+          <span>Категория</span>
+          <select id="orgCategory" class="input"></select>
+        </label>
+
+        <label class="field">
+          <span>Метро</span>
+          <select id="orgMetro" class="input"></select>
+        </label>
+
+        <label class="field">
+          <span>Возраст</span>
+          <select id="orgAge" class="input">
+            <option value="0">0+</option>
+            <option value="6">6+</option>
+            <option value="12">12+</option>
+            <option value="16">16+</option>
+            <option value="18">18+</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Цена (₭)</span>
+          <input id="orgPrice" class="input" type="number" min="0" value="500">
+        </label>
+
+        <label class="field">
+          <span>Дата/время (текст)</span>
+          <input id="orgDateText" class="input" placeholder="например: 15 июня, 19:00">
+        </label>
+
+        <label class="field" style="grid-column:1/-1">
+          <span>Описание</span>
+          <textarea id="orgDesc" class="input" rows="4" placeholder="Описание пишешь ты сам"></textarea>
+        </label>
+
+        <label class="field" style="grid-column:1/-1">
+          <span>Правила мероприятия</span>
+          <textarea id="orgRules" class="input" rows="4" placeholder="Например: вход по билету, 18+, запреты..."></textarea>
+        </label>
+
+        <label class="field">
+          <span>Место (текст)</span>
+          <input id="orgVenue" class="input" placeholder="например: Казанский Кремль">
+        </label>
+
+        <!-- ======= ФОН СОБЫТИЯ (event.html) ======= -->
+        <label class="field">
+          <span>Фон события (URL) — можно оставить пустым</span>
+          <!-- ВСТАВЬ СЮДА ПУТЬ/URL К КАРТИНКЕ -->
+          <input id="orgCoverUrl" class="input" placeholder="например: images/events/my-event.jpg">
+        </label>
+
+        <label class="field">
+          <span>Фон события (файл) — по желанию</span>
+          <input id="orgCoverFile" class="input" type="file" accept="image/*">
+          <div class="muted small">Если выберешь файл — он заменит URL (запишется base64).</div>
+        </label>
+
+        <!-- ======= КАРТИНКА КАРТОЧКИ НА ГЛАВНОЙ (опционально) ======= -->
+        <label class="field">
+          <span>Картинка для карточки (URL) — не обязательно</span>
+          <input id="orgCardImageUrl" class="input" placeholder="например: images/events/card1.jpg">
+        </label>
+
+        <label class="field">
+          <span>Картинка для карточки (файл) — не обязательно</span>
+          <input id="orgCardImageFile" class="input" type="file" accept="image/*">
+          <div class="muted small">Если выберешь файл — он заменит URL (запишется base64).</div>
+        </label>
+
+        <label class="field">
+          <span>Видео URL (необязательно)</span>
+          <!-- YouTube embed: https://www.youtube.com/embed/XXXX или mp4 -->
+          <input id="orgVideoUrl" class="input" placeholder="например: https://www.youtube.com/embed/XXXX">
+        </label>
+
+        <label class="field">
+          <span>Координаты LAT</span>
+          <input id="orgLat" class="input" type="number" step="0.000001" placeholder="55.7963">
+        </label>
+
+        <label class="field">
+          <span>Координаты LNG</span>
+          <input id="orgLng" class="input" type="number" step="0.000001" placeholder="49.1088">
+        </label>
+
+        <label class="field">
+          <span>Показывать с (YYYY-MM-DD)</span>
+          <input id="orgStartDate" class="input" placeholder="например: 2026-06-10">
+        </label>
+
+        <label class="field">
+          <span>Скрыть после (YYYY-MM-DD)</span>
+          <input id="orgEndDate" class="input" placeholder="например: 2026-06-30">
+        </label>
+
+        <label class="field">
+          <span>Билеты: обычные</span>
+          <input id="orgTRegular" class="input" type="number" min="0" value="300">
+        </label>
+
+        <label class="field">
+          <span>Билеты: VIP</span>
+          <input id="orgTVip" class="input" type="number" min="0" value="50">
+        </label>
+
+        <label class="field">
+          <span>Билеты: Meet&Greed</span>
+          <input id="orgTMeet" class="input" type="number" min="0" value="20">
+        </label>
+
+        <label class="check" style="grid-column:1/-1">
+          <input id="orgPromote" type="checkbox">
+          <span>Рекламировать событие</span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="orgSaveBtn" class="btn btn--primary">Сохранить</button>
+        <button class="btn btn--soft" data-close="modalOrg">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORGANIZER EVENTS LIST MODAL -->
+  <div id="modalOrgEvents" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="orgEventsTitle">Управление событиями</div>
+      <button class="btn btn--soft btn--icon" data-close="modalOrgEvents">✕</button>
+    </div>
+    <div class="modal__body" id="orgEventsBody"></div>
+  </div>
+
+  <!-- BUY MODAL -->
+  <div id="modalBuy" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Покупка билета</div>
+      <button class="btn btn--soft btn--icon" data-close="modalBuy">✕</button>
+    </div>
+    <div class="modal__body" id="buyBody"></div>
+  </div>
+
+  <!-- CHAT MODAL -->
+  <div id="modalChat" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title" id="chatTitle">Чат</div>
+      <button class="btn btn--soft btn--icon" data-close="modalChat">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="chatBox" class="chat"></div>
+      <div class="row">
+        <input id="chatInput" class="input" placeholder="Сообщение...">
+        <button id="chatSend" class="btn btn--primary">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPUP MODAL -->
+  <div id="modalTopup" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Покупка валюты</div>
+      <button class="btn btn--soft btn--icon" data-close="modalTopup">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="muted">1 ₭ = 1 рубль (демо).</div>
+      <div class="form" style="margin-top:10px;">
+        <label class="field">
+          <span>Сумма (₭)</span>
+          <input id="topupAmount" class="input" type="number" min="1" value="500">
+        </label>
+        <button id="topupConfirm" class="btn btn--primary">Пополнить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIFT MODAL -->
+  <div id="modalGift" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Подарить валюту</div>
+      <button class="btn btn--soft btn--icon" data-close="modalGift">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form">
+        <label class="field">
+          <span>Кому (никнейм)</span>
+          <input id="giftTo" class="input" placeholder="например: vasiliy">
+        </label>
+        <label class="field">
+          <span>Сколько (₭)</span>
+          <input id="giftAmount" class="input" type="number" min="1" value="100">
+        </label>
+        <button id="giftConfirm" class="btn btn--primary">Подарить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHEEL MODAL -->
+  <div id="modalWheel" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Колесо фортуны (15 исходов)</div>
+      <button class="btn btn--soft btn--icon" data-close="modalWheel">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="fortune">
+        <div class="wheelWrap">
+          <div id="wheel" class="wheel"></div>
+          <div class="pointer">▲</div>
+        </div>
+        <div>
+          <button id="spin" class="btn btn--primary">Крутить</button>
+          <div id="spinInfo" class="note" style="margin-top:10px;"></div>
+          <div class="muted small">1 раз в день на аккаунт (демо).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT MODAL -->
+  <div id="modalSupport" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Поддержка</div>
+      <button class="btn btn--soft btn--icon" data-close="modalSupport">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="support">
+        <div>
+          <div class="muted">Автобот:</div>
+          <div id="botChat" class="chat" style="margin-top:10px;"></div>
+          <div class="row" style="margin-top:10px;">
+            <input id="botInput" class="input" placeholder="Вопрос...">
+            <button id="botSend" class="btn btn--primary">Отправить</button>
+          </div>
+          <div class="row" style="margin-top:10px; flex-wrap:wrap;">
+            <button class="btn btn--soft btn--sm" data-botq="Как купить билет?">Как купить?</button>
+            <button class="btn btn--soft btn--sm" data-botq="Как работает валюта?">Валюта</button>
+            <button class="btn btn--soft btn--sm" data-botq="Как получить доступ к чату?">Чат</button>
+            <button class="btn btn--soft btn--sm" data-botq="Как работает колесо фортуны?">Колесо</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="muted">Написать создателю (EmailJS → noterlore@gmail.com):</div>
+          <div class="form" style="margin-top:10px;">
+            <label class="field">
+              <span>Тема</span>
+              <input id="supSubject" class="input" placeholder="Тема">
+            </label>
+            <label class="field">
+              <span>Сообщение</span>
+              <textarea id="supMessage" class="input" rows="5" placeholder="Текст..."></textarea>
+            </label>
+            <div class="row">
+              <button id="supSend" class="btn btn--primary">Отправить</button>
+              <a id="supMailto" class="btn btn--soft" href="#">mailto (запасной)</a>
+            </div>
+            <div class="muted small">Если EmailJS не настроен — используй mailto.</div>
+          </div>
+
+          <hr class="hr">
+
+          <div class="muted"><b>Написать организатору</b> (уведомлением)</div>
+          <div class="form" style="margin-top:10px;">
+            <label class="field">
+              <span>Ник организатора</span>
+              <input id="msgToOrg" class="input" placeholder="например: gng_org">
+            </label>
+            <label class="field">
+              <span>Вопрос</span>
+              <textarea id="msgToOrgText" class="input" rows="4" placeholder="Твой вопрос организаторам..."></textarea>
+            </label>
+            <button id="msgToOrgSend" class="btn btn--primary">Отправить организатору</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP MODAL -->
+  <div id="modalMap" class="modal modal--wide hidden" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <div class="modal__title">Карта Казани</div>
+      <button class="btn btn--soft btn--icon" data-close="modalMap">✕</button>
+    </div>
+    <div class="modal__body">
+      <div id="map" class="map"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
