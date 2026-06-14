@@ -54,13 +54,13 @@
   /* ===================== NEWS ADS ===================== */
   const NEWS_ADS = [
     {
-      href: "https://kapusta.shop/5opkaMellsher", // сюда ссылку, куда ведёт реклама
-      src: "https://media1.tenor.com/m/8f3IuKXk7V4AAAAC/streaming-for-alex.gif",
+      href: "https://kapusta.shop/5opkaMellsher", 
+      src: "https://media1.tenor.com/m/Cd-LzvFtkrsAAAAC/tung-tung-tung-sahur-brain-rot.gif",
       title: "Реклама 1"
     },
     {
-      href: "https://www.tiktok.com/@voterlore?lang=ru-RU", // сюда ссылку, куда ведёт реклама
-      src: "https://media1.tenor.com/m/4jbUCERfMZsAAAAC/fire-flame.gif",
+      href: "https://www.tiktok.com/@voterlore?lang=ru-RU", 
+      src: "https://media1.tenor.com/m/wBzXX1bly3sAAAAd/subaru-natsuki-subaru.gif",
       title: "Реклама 2"
     },
   ];
@@ -1113,6 +1113,7 @@ if (p.coupon){
     renderTickets();
     renderCoupons();
     renderEvents();
+
 
     pushNotifTo(state.user.username, `Покупка успешна: ${ev.title} (${eventCode(ev.id)}). Билет: ${ticketCode}. Доступ к чату открыт.`);
 
@@ -2420,6 +2421,7 @@ function bindNews(){
       renderFilterSelects();
       renderCatsModal();
       renderTabs();
+      renderPromoSlider();
       renderEvents();
       renderNewsWidget();
       renderTickets();
@@ -2452,6 +2454,90 @@ function openModal(id){
   m?.classList.remove("hidden");
   const body = m?.querySelector(".modal__body");
   if (body) body.scrollTop = 0;
+}
+// ===== PROMO SLIDER (promoted events only) =====
+let promoIdx = 0;
+let promoTimer = null;
+
+function promoList(){
+  return (state.events || [])
+    .filter(ev => ev.promoted && isEventActiveNow(ev));
+}
+
+function renderPromoSlider(){
+  const wrap  = document.getElementById("promoSlider");
+  const track = document.getElementById("promoTrack");
+  const prev  = document.getElementById("promoPrev");
+  const next  = document.getElementById("promoNext");
+  const dots  = document.getElementById("promoDots");
+  if (!wrap || !track || !prev || !next || !dots) return;
+
+  const list = promoList();
+  if (!list.length){
+    wrap.classList.add("hidden");
+    return;
+  }
+  wrap.classList.remove("hidden");
+
+  promoIdx = Math.max(0, Math.min(promoIdx, list.length - 1));
+
+  track.innerHTML = list.map(ev => {
+    const img = (ev.coverUrl || ev.cardImageUrl || "").trim();
+    const bg = img
+      ? `url('${safeUrl(img)}')`
+      : `linear-gradient(135deg, rgba(255,61,110,.65), rgba(0,0,0,.25))`;
+
+    return `
+      <div class="promoSlide" style="background-image:${bg}">
+        <div class="promoBadge">Реклама</div>
+        <div class="promoInner">
+          <div class="promoTitle">${esc(ev.title)}</div>
+          <div class="promoMeta">
+            <span>${esc(ev.category)}</span>
+            <span>${esc(ev.metro)}</span>
+            <span>${ev.age}+</span>
+            <span>от ${fmt(ev.basePrice)} ₭</span>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn btn--soft btn--sm" href="event.html?id=${ev.id}">Открыть</a>
+            <button class="btn btn--primary btn--sm" data-buy="${ev.id}">Купить</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  dots.innerHTML = list.map((_,i)=>
+    `<button class="promoDot ${i===promoIdx?"isActive":""}" data-dot="${i}"></button>`
+  ).join("");
+
+  const apply = () => {
+    track.style.transform = `translateX(${-promoIdx * 100}%)`;
+    dots.querySelectorAll(".promoDot").forEach((d,i)=>d.classList.toggle("isActive", i===promoIdx));
+  };
+
+  const go = (i) => {
+    promoIdx = (i + list.length) % list.length;
+    apply();
+  };
+
+  prev.onclick = () => go(promoIdx - 1);
+  next.onclick = () => go(promoIdx + 1);
+
+  dots.querySelectorAll("[data-dot]").forEach(b=>{
+    b.onclick = () => go(Number(b.dataset.dot));
+  });
+
+  track.querySelectorAll("[data-buy]").forEach(b=>{
+    b.addEventListener("click", () => openBuy(Number(b.dataset.buy)));
+  });
+
+  apply();
+
+  if (promoTimer) clearInterval(promoTimer);
+  if (list.length > 1){
+    promoTimer = setInterval(() => go(promoIdx + 1), 6000);
+  }
 }
 
   /* ===================== START ===================== */
