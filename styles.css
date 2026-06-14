@@ -45,11 +45,7 @@ html,body{ height:100%; }
 body{
   margin:0;
   font-family: var(--font-family);
-  background:
-    radial-gradient(900px 600px at 10% -5%, color-mix(in srgb, var(--a1) 16%, transparent), transparent 55%),
-    radial-gradient(900px 600px at 90% 0%, color-mix(in srgb, var(--a2) 16%, transparent), transparent 55%),
-    radial-gradient(900px 600px at 50% 110%, color-mix(in srgb, var(--a3) 14%, transparent), transparent 60%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -93,8 +89,8 @@ body{
   z-index: 1001;
   padding: 12px 14px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--a1), var(--a2));
-  color: #101018;
+  background: #111827;
+  color: #fff;
   font-weight: 900;
   box-shadow: var(--shadow);
   max-width: min(680px, calc(100% - 24px));
@@ -103,8 +99,7 @@ body{
 
 .header{
   position: sticky; top: 0; z-index: 30;
-  background: color-mix(in srgb, var(--panel) 85%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
 .header--compact{ position: sticky; }
@@ -181,9 +176,9 @@ body{
 .btn:hover{ transform: translateY(-1px); filter: brightness(1.03); }
 .btn--soft{ background: var(--soft); }
 .btn--primary{
-  border-color: rgba(0,0,0,.08);
-  background: linear-gradient(135deg, var(--a1), var(--a2));
-  color: #101018;
+  border-color: rgba(0,0,0,.12);
+  background: var(--a1);
+  color: #fff;
   font-weight: 900;
 }
 .btn--sm{ padding: 8px 10px; font-size: 13px; }
@@ -230,9 +225,9 @@ body{
   font-size: 13px;
 }
 .tab.isActive{
-  border-color: transparent;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--a3) 55%, #fff), color-mix(in srgb, var(--a2) 45%, #fff));
-  color:#101018;
+  border-color: color-mix(in srgb, var(--a1) 28%, var(--border));
+  background: color-mix(in srgb, var(--a1) 16%, transparent);
+  color: var(--text);
   font-weight: 900;
 }
 
@@ -314,9 +309,9 @@ body{
   background: var(--panel);
 }
 .tag--price{
-  border-color: transparent;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--a2) 55%, #fff), color-mix(in srgb, var(--a3) 45%, #fff));
-  color: #101018;
+  border-color: color-mix(in srgb, var(--a1) 28%, var(--border));
+  background: color-mix(in srgb, var(--a1) 14%, transparent);
+  color: var(--text);
   font-weight: 900;
 }
 .event__bottom{
@@ -371,7 +366,7 @@ body{
   padding: 12px 14px;
   display:flex; justify-content:space-between; align-items:center; gap: 10px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--a3) 14%, transparent), transparent);
+  background: var(--panel);
 }
 .modal__title{ font-weight: 900; }
 .modal__body{
@@ -415,14 +410,20 @@ body{
   display:flex; flex-direction:column; gap: 8px;
 }
 .msg{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+
   max-width: 86%;
   padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid var(--border);
   background: var(--panel);
 }
+
 .msg--me{
   margin-left:auto;
+  flex-direction: row-reverse;
   border-color: transparent;
   background: color-mix(in srgb, var(--a1) 18%, var(--panel));
 }
@@ -509,7 +510,6 @@ body{
 
 /* Nick styles */
 .nickWrap{ display:inline-grid; line-height:1; vertical-align:middle; }
-.nickBadge{ font-size: 12px; text-align:center; transform: translateY(2px); }
 .nickName{ font-weight: 900; }
 .nick--creator{ color: #ffcc4d; }
 .nick--vip{ color: #2b7bff; }
@@ -536,11 +536,6 @@ body{
     padding: 30px;
     background: var(--panel2);
     border-radius: var(--radius);
-}
-
-/* Цвет значка СМИ */
-.nickName.nick--media {
-    color: #00ffcc;
 }
 
 /* Значок СМИ над ником чуть-чуть подвинуть */
@@ -606,18 +601,7 @@ body{
   margin: 14px 0;
 }
 .nick--media{ color: #27c46b; }  /* зелёный для СМИ */
-.msg--me{ flex-direction: row-reverse; }
 /* ===== Chat rows with avatars ===== */
-.msg{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-}
-
-.msg--me{
-  flex-direction: row-reverse; /* мои сообщения справа, аватар справа */
-}
-
 .msg__avatar{
   width:26px;
   height:26px;
@@ -657,4 +641,147 @@ body{
 .msg__text{
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+
+/* 1) Убираем цветные "облака" на фоне */
+body{
+  background: var(--bg) !important;
+}
+
+/* 2) Шапка проще (без blur) */
+.header{
+  background: var(--panel) !important;
+  backdrop-filter: none !important;
+}
+
+/* 3) Кнопки без градиента */
+.btn--primary{
+  background: var(--a1) !important;
+  border-color: rgba(0,0,0,.12) !important;
+  color:#fff !important;
+  font-weight: 900;
+}
+.btn--primary:hover{
+  filter: none !important;
+  background: color-mix(in srgb, var(--a1) 85%, #000) !important;
+}
+
+/* 4) Плашки без градиента */
+.tag--price,
+.tab.isActive{
+  background: color-mix(in srgb, var(--a1) 16%, transparent) !important;
+  border-color: color-mix(in srgb, var(--a1) 28%, var(--border)) !important;
+  color: var(--text) !important;
+}
+
+/* 5) Toast без градиента */
+.toast{
+  background: #111827 !important;
+  color:#fff !important;
+}
+
+/* 6) Скрываем "лишние подписи" (быстро/прототип/60 секунд/есть возврат и т.п.) */
+.brand__sub,
+.heroHint,
+.fineprint,
+.card__head .muted.small{
+  display:none !important;
+}
+
+/* 7) Адаптив шапки (чтобы на телефоне не ломалось) */
+@media (max-width: 980px){
+  .header__top{ flex-wrap:wrap; align-items:stretch; }
+  .brand{ min-width: unset; }
+  .search{ order:3; width:100%; }
+  .topActions{ width:100%; justify-content:space-between; gap:8px; }
+  .header__bottom{ flex-wrap:wrap; gap:10px; }
+  .wallet{ width:100%; justify-content:flex-start; }
+}
+@media (max-width: 520px){
+  .pill{ display:none; }
+  .pill.pill--gold{ display:inline-flex; }
+}
+
+/* ===================== PROMO SLIDER ===================== */
+.promoSlider{
+  margin-top: 12px;
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  overflow:hidden;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  position: relative;
+  height: 260px;
+}
+.promoTrack{
+  height:100%;
+  display:flex;
+  transition: transform .35s ease;
+}
+.promoSlide{
+  min-width:100%;
+  height:100%;
+  position:relative;
+  background-size:cover;
+  background-position:center;
+}
+.promoSlide::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.10));
+}
+.promoInner{
+  position:absolute; left:14px; right:14px; bottom:14px;
+  color:#fff; z-index:1;
+  display:grid; gap:8px;
+}
+.promoTitle{ font-weight:900; font-size:22px; line-height:1.15; }
+.promoMeta{ display:flex; flex-wrap:wrap; gap:8px; opacity:.95; }
+.promoMeta span{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.18);
+}
+.promoBadge{
+  position:absolute; top:12px; left:12px; z-index:2;
+  font-size:12px; font-weight:900;
+  padding:6px 10px; border-radius:999px;
+  background: rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+}
+.promoBtn{
+  position:absolute; top:50%;
+  transform: translateY(-50%);
+  width:40px; height:40px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.35);
+  color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  z-index:3; font-size:22px;
+}
+.promoPrev{ left:10px; }
+.promoNext{ right:10px; }
+
+.promoDots{
+  position:absolute; left:0; right:0; bottom:10px;
+  display:flex; justify-content:center; gap:8px;
+  z-index:3;
+}
+.promoDot{
+  width:8px; height:8px;
+  border-radius:999px;
+  background: rgba(255,255,255,.45);
+  border:1px solid rgba(255,255,255,.35);
+  cursor:pointer;
+}
+.promoDot.isActive{ background:#fff; }
+
+@media (max-width: 820px){
+  .promoSlider{ height: 210px; }
+  .promoTitle{ font-size:18px; }
 }
